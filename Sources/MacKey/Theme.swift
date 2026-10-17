@@ -9,6 +9,9 @@ typealias ViewState<Value> = SwiftUI.State<Value>
 
 enum MacKeyTheme {
     static let accent = Color(red: 0.60, green: 0.76, blue: 0.88)
+    static func panelAccent(_ scheme: ColorScheme) -> Color {
+        scheme == .dark ? accent : Color(red: 0.24, green: 0.43, blue: 0.57)
+    }
     static func canvas(_ scheme: ColorScheme) -> Color {
         scheme == .dark ? Color(red: 0.12, green: 0.135, blue: 0.16) : Color(red: 0.94, green: 0.95, blue: 0.96)
     }

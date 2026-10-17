@@ -24,7 +24,7 @@ public enum Appearance: String, Codable, CaseIterable, Sendable {
 }
 public struct Preferences: Codable, Equatable, Sendable {
     public var language: PracticeLanguage = .ru
-    public var layoutID = "builtin.ru"
+    public var layoutID = KeyboardLayout.russianMacSystemID
     public var mode: TrainingMode = .automatic
     public var manualLevel = 1
     public var capitals = false

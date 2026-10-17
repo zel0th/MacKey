@@ -60,6 +60,21 @@ public struct KeyboardLayout: Identifiable, Codable, Equatable, Sendable {
     public static let topCodes = [12,13,14,15,17,16,32,34,31,35,33,30,42]
     public static let homeCodes = [0,1,2,3,5,4,38,40,37,41,39]
     public static let bottomCodes = [6,7,8,9,11,45,46,43,47,44]
+    public static let russianMacSystemID = "com.apple.keylayout.Russian"
+    /// Native Mac punctuation, also available when the system layout cannot be read.
+    public static let russianMac: KeyboardLayout = {
+        var layout = make(id: "builtin.ru.mac", name: "Русская — Mac (ЙЦУКЕН, встроенная)", language: "ru", rows: ["]1234567890-=", "йцукенгшщзхъё", "фывапролджэ", "ячсмитьбю/"], numberShift: "[!\"№%:,.;()_+", extra: KeyGlyph(">", "<"))
+        layout.glyphs[42] = KeyGlyph("ё", "Ё")
+        layout.glyphs[44] = KeyGlyph("/", "?")
+        return layout
+    }()
+    public static func preferred(for language: PracticeLanguage, among layouts: [KeyboardLayout]) -> KeyboardLayout {
+        if language == .ru {
+            return layouts.first { $0.id == russianMacSystemID }
+                ?? layouts.first { $0.id == russianMac.id } ?? russianMac
+        }
+        return layouts.first { $0.language == language.rawValue } ?? english
+    }
     public static let russian: KeyboardLayout = make(id: "builtin.ru", name: "Русская — ПК (ЙЦУКЕН, встроенная)", language: "ru", rows: ["ё1234567890-=", "йцукенгшщзхъ\\", "фывапролджэ", "ячсмитьбю."], numberShift: "Ё!\"№;%:?*()_+", extra: KeyGlyph("<", ">"))
     public static let english: KeyboardLayout = make(id: "builtin.en", name: "Английская — США (QWERTY, встроенная)", language: "en", rows: ["`1234567890-=", "qwertyuiop[]\\", "asdfghjkl;'", "zxcvbnm,./"], numberShift: "~!@#$%^&*()_+", extra: KeyGlyph("§", "±"))
     public static let ukrainian: KeyboardLayout = make(id: "builtin.uk", name: "Українська · ЙЦУКЕН", language: "uk", rows: ["ґ1234567890-=", "йцукенгшщзхї\\", "фівапролджє", "ячсмитьбю."], numberShift: "Ґ!\"№;%:?*()_+", extra: KeyGlyph("'", "’"))

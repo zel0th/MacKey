@@ -18,7 +18,7 @@ import MacKeyCore
         return original
     }
     static func load() -> [KeyboardLayout] {
-        var result: [KeyboardLayout] = [.russian, .english, .ukrainian, .dvorak, .colemak]
+        var result: [KeyboardLayout] = [.russianMac, .russian, .english, .ukrainian, .dvorak, .colemak]
         let filter = [kTISPropertyInputSourceType!: kTISTypeKeyboardLayout!] as CFDictionary
         guard let sources = TISCreateInputSourceList(filter, true)?.takeRetainedValue() as? [TISInputSource] else { return result }
         for source in sources {

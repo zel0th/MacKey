@@ -127,7 +127,7 @@ struct SeededRandom: RandomNumberGenerator {
     }
 }
 @Suite("Keyboard mapping") struct KeyboardTests {
-    @Test(arguments: [KeyboardLayout.russian, .english, .ukrainian, .dvorak, .colemak]) func everyGlyphHasAnInputAndHint(layout: KeyboardLayout) throws {
+    @Test(arguments: [KeyboardLayout.russianMac, .russian, .english, .ukrainian, .dvorak, .colemak]) func everyGlyphHasAnInputAndHint(layout: KeyboardLayout) throws {
         for character in layout.supported {
             let hint = try #require(layout.hint(for: character))
             #expect(layout.character(code: hint.code, shift: hint.shift, caps: false, option: hint.option) == character)
@@ -177,5 +177,51 @@ struct SeededRandom: RandomNumberGenerator {
                 #expect(layout.page(containing: cursor).contains { $0.contains(cursor) })
             }
         }
+    }
+}
+
+@Suite("Default layout") struct DefaultLayoutTests {
+    @Test func russianPrefersNativeMacEvenWhenPCComesFirst() {
+        var native = KeyboardLayout.russianMac
+        native.id = KeyboardLayout.russianMacSystemID
+        let layouts = [KeyboardLayout.russian, .english, .russianMac, native]
+        #expect(Preferences().layoutID == native.id)
+        #expect(KeyboardLayout.preferred(for: .ru, among: layouts) == native)
+        #expect(KeyboardLayout.preferred(for: .en, among: layouts) == .english)
+    }
+    @Test func missingSystemLayoutFallsBackToMacPunctuation() {
+        let layout = KeyboardLayout.preferred(for: .ru, among: [.russian, .english])
+        #expect(layout == .russianMac)
+        #expect(layout.character(code: 42, shift: false, caps: false) == "ё")
+        #expect(layout.character(code: 44, shift: true, caps: false) == "?")
+        #expect(layout.character(code: 22, shift: true, caps: false) == ",")
+        #expect(layout.character(code: 26, shift: true, caps: false) == ".")
+        #expect(layout.character(code: 21, shift: true, caps: false) == "%")
+        #expect(layout.character(code: 10, shift: false, caps: false) == ">")
+    }
+    @Test func existingPCPreferenceSurvivesPersistence() throws {
+        var settings = Preferences(); settings.layoutID = KeyboardLayout.russian.id
+        let restored = try JSONDecoder().decode(Preferences.self, from: JSONEncoder().encode(settings))
+        #expect(restored.layoutID == "builtin.ru")
+    }
+}
+
+@Suite("Statistics pagination") struct StatisticsPaginationTests {
+    @Test(arguments: [0, 1, 8, 9, 24, 25, 65, 5_000], [8, 24])
+    func pagesCoverEveryItemExactlyOnce(count: Int, size: Int) {
+        let first = PageWindow(itemCount: count, pageSize: size, requestedIndex: 0)
+        let pages = (0..<first.pageCount).map { PageWindow(itemCount: count, pageSize: size, requestedIndex: $0) }
+        #expect(pages.flatMap { Array($0.range) } == Array(0..<count))
+        #expect(pages.allSatisfy { $0.range.count <= size })
+        #expect(!first.hasPrevious)
+        #expect(pages.last?.hasNext == false)
+    }
+    @Test func shrinkingHistoryAndInvalidRequestsStayInBounds() {
+        let last = PageWindow(itemCount: 9, pageSize: 8, requestedIndex: 999)
+        #expect(last.index == 1 && last.range == 8..<9)
+        #expect(last.hasPrevious && !last.hasNext)
+        #expect(PageWindow(itemCount: 9, pageSize: 8, requestedIndex: -1).index == 0)
+        #expect(PageWindow(itemCount: 0, pageSize: 8, requestedIndex: 2).range.isEmpty)
+        #expect(PageWindow(itemCount: -1, pageSize: 0, requestedIndex: -1).pageCount == 1)
     }
 }

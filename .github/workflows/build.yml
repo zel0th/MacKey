@@ -12,5 +12,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Test training engine and pagination
         run: swift test --parallel
+      - name: Check macOS layouts and saved preferences
+        run: |
+          bash Scripts/check-layouts.sh
+          bash Scripts/check-store.sh
       - name: Build the native Xcode project
         run: xcodebuild -project MacKey.xcodeproj -scheme MacKey -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build

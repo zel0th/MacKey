@@ -28,7 +28,8 @@ enum Panel: String, Identifiable { case settings, statistics, library, help; var
     private var sessionLevel = 1
     var preferences: Preferences { saved.preferences }
     var layout: KeyboardLayout {
-        var selected = layouts.first { $0.id == preferences.layoutID } ?? .russian
+        var selected = layouts.first { $0.id == preferences.layoutID }
+            ?? KeyboardLayout.preferred(for: preferences.language, among: layouts)
         if preferences.shape == .ansi { selected.glyphs.removeValue(forKey: 10) }
         return selected
     }
@@ -70,7 +71,9 @@ enum Panel: String, Identifiable { case settings, statistics, library, help; var
                 saved.levels = saved.levels.mapValues { min(6, max(1, $0)) }
             }
         } catch { canSave = false; errorMessage = "Не удалось прочитать сохранённые данные. Исходный файл сохранён без изменений: \(storageURL.path). \(error.localizedDescription)" }
-        if !layouts.contains(where: { $0.id == preferences.layoutID }) { saved.preferences.layoutID = KeyboardLayout.russian.id; saved.preferences.language = .ru }
+        if !layouts.contains(where: { $0.id == preferences.layoutID }) {
+            saved.preferences.layoutID = KeyboardLayout.preferred(for: preferences.language, among: layouts).id
+        }
         if saved.preferences.mode == .custom { saved.preferences.mode = .automatic }
         restart()
     }
@@ -86,7 +89,7 @@ enum Panel: String, Identifiable { case settings, statistics, library, help; var
         let oldLanguage = preferences.language
         change(&saved.preferences)
         if preferences.language != oldLanguage {
-            saved.preferences.layoutID = availableLayouts.first?.id ?? KeyboardLayout.english.id
+            saved.preferences.layoutID = KeyboardLayout.preferred(for: preferences.language, among: layouts).id
         }
         persist()
         if restartLesson { restart() }
