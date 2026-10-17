@@ -1,0 +1,9 @@
+.build/
+build/
+DerivedData/
+.DS_Store
+*.xcuserstate
+xcuserdata/
+
+# Local verification logs can contain absolute paths.
+Documentation/test-results.log

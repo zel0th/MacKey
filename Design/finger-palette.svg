@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="240" viewBox="0 0 1200 240">
+<title>MacKey · пастельная палитра пальцев</title>
+<rect width="1200" height="240" rx="24" fill="#1f2229"/>
+<g font-family="-apple-system, Helvetica, sans-serif" text-anchor="middle">
+<text x="600" y="44" fill="#eef0f4" font-size="22">MacKey · каждый палец — свой цвет</text>
+<g fill-opacity=".16" stroke-width="1.5">
+<rect x="32" y="76" width="128" height="100" rx="14" fill="#e899a6" stroke="#e899a6"/>
+<rect x="176" y="76" width="128" height="100" rx="14" fill="#e0c282" stroke="#e0c282"/>
+<rect x="320" y="76" width="128" height="100" rx="14" fill="#a8cc8f" stroke="#a8cc8f"/>
+<rect x="464" y="76" width="128" height="100" rx="14" fill="#87c4d9" stroke="#87c4d9"/>
+<rect x="608" y="76" width="128" height="100" rx="14" fill="#c2a3e3" stroke="#c2a3e3"/>
+<rect x="752" y="76" width="128" height="100" rx="14" fill="#82ccb3" stroke="#82ccb3"/>
+<rect x="896" y="76" width="128" height="100" rx="14" fill="#e6b582" stroke="#e6b582"/>
+<rect x="1040" y="76" width="128" height="100" rx="14" fill="#e896ba" stroke="#e896ba"/>
+</g>
+<g font-size="38"><text x="96" y="139" fill="#e899a6">Ф</text><text x="240" y="139" fill="#e0c282">Ы</text><text x="384" y="139" fill="#a8cc8f">В</text><text x="528" y="139" fill="#87c4d9">А</text><text x="672" y="139" fill="#c2a3e3">О</text><text x="816" y="139" fill="#82ccb3">Л</text><text x="960" y="139" fill="#e6b582">Д</text><text x="1104" y="139" fill="#e896ba">Ж</text></g>
+<g fill="#c5c8cf" font-size="12"><text x="96" y="205">Левый мизинец</text><text x="240" y="205">Левый безымянный</text><text x="384" y="205">Левый средний</text><text x="528" y="205">Левый указательный</text><text x="672" y="205">Правый указательный</text><text x="816" y="205">Правый средний</text><text x="960" y="205">Правый безымянный</text><text x="1104" y="205">Правый мизинец</text></g>
+</g></svg>

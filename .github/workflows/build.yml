@@ -1,0 +1,16 @@
+name: Build and test
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test training engine and pagination
+        run: swift test --parallel
+      - name: Build the native Xcode project
+        run: xcodebuild -project MacKey.xcodeproj -scheme MacKey -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
