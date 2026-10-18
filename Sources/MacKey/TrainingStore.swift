@@ -5,7 +5,7 @@ import Observation
 import MacKeyCore
 #endif
 
-enum Panel: String, Identifiable { case settings, statistics, library, help; var id: String { rawValue } }
+enum Panel: String, Identifiable { case settings, statistics, library, help, about; var id: String { rawValue } }
 
 @MainActor @Observable final class TrainingStore {
     var saved: SavedState

@@ -19,9 +19,7 @@ struct MacKeyApp: App {
         .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(replacing: .appInfo) {
-                Button("О программе MacKey") {
-                    NSApplication.shared.orderFrontStandardAboutPanel(options: [.applicationName: "MacKey", .applicationVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.2", .credits: NSAttributedString(string: "Клавиатурный тренажёр для Mac\nSwiftUI · Векторная клавиатура · Локальная статистика")])
-                }
+                Button("О программе MacKey") { store.panel = .about }
             }
             CommandGroup(replacing: .newItem) {}
             CommandGroup(replacing: .appSettings) { Button("Настройки…") { store.panel = .settings }.keyboardShortcut(",") }
@@ -62,8 +60,7 @@ struct MainView: View {
     var body: some View {
         GeometryReader { geometry in
         ZStack {
-            MacKeyTheme.canvas(scheme).ignoresSafeArea()
-            LinearGradient(colors: [MacKeyTheme.accent.opacity(0.055), .clear, Color.purple.opacity(0.025)], startPoint: .topLeading, endPoint: .bottomTrailing).ignoresSafeArea()
+            MacKeyWindowBackdrop()
             VStack(spacing: 0) {
                 header
                 ScrollView {
@@ -92,8 +89,9 @@ struct MainView: View {
                 case .statistics: StatisticsView(store: store)
                 case .library: TextLibraryView(store: store)
                 case .help: HelpView { store.panel = nil }
+                case .about: AboutMacKeyView { store.panel = nil }
                 }
-            }.preferredColorScheme(scheme)
+            }.preferredColorScheme(scheme).macKeyGlassSheet()
         }
         .onChange(of: scenePhase) { if scenePhase != .active { store.pause() } }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in store.pause() }
@@ -117,7 +115,7 @@ struct MainView: View {
             Button { store.panel = .library } label: { Image(systemName: "text.book.closed") }.help("Мои тексты").accessibilityLabel("Мои тексты")
             Button { store.panel = .settings } label: { Image(systemName: "slider.horizontal.3") }.help("Настройки").accessibilityLabel("Настройки")
         }.buttonStyle(.plain).padding(.horizontal, 28).padding(.top, 15).padding(.bottom, 14)
-        .background(.primary.opacity(0.018))
+        .macKeyGlassChrome()
     }
     private var metrics: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
@@ -164,7 +162,7 @@ struct MainView: View {
             Button { store.restart() } label: { Label("Новый урок", systemImage: "arrow.clockwise") }.help("Новый урок · Return")
             Spacer()
             Button { store.panel = .statistics } label: { Label("Статистика", systemImage: "chart.xyaxis.line") }
-        }.font(.system(size: 12)).foregroundStyle(.secondary).buttonStyle(.plain).padding(.horizontal, 28).padding(.vertical, 18)
+        }.font(.system(size: 12)).foregroundStyle(.secondary).buttonStyle(.plain).padding(.horizontal, 28).padding(.vertical, 18).macKeyGlassChrome()
     }
 }
 struct MetricView: View {

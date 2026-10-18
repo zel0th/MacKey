@@ -24,7 +24,7 @@ struct HelpView: View {
                 Text("Сначала точность — скорость придёт с практикой.").font(.callout).foregroundStyle(.secondary)
                 Spacer()
                 Button("Начать практику", action: close).buttonStyle(.borderedProminent)
-            }.padding(20)
+            }.padding(20).macKeyGlassChrome()
         }.frame(width: 860, height: 600)
     }
     private var basics: some View {

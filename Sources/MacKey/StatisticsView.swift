@@ -39,20 +39,23 @@ struct StatisticsView: View {
                 Text("Данные на вашем Mac · CSV включает все раскладки").font(.caption).foregroundStyle(.secondary)
                 Spacer()
                 Button("Экспорт CSV…") { store.exportHistory() }.disabled(store.saved.history.isEmpty)
-            }.padding(20)
+            }.padding(20).macKeyGlassChrome()
         }.frame(width: 860, height: 620)
         .sheet(item: $selected) { session in
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(spacing: 0) {
                 PanelHeading(title: "Результат занятия", subtitle: session.date.formatted(date: .long, time: .shortened)) { selected = nil }
-                HStack(spacing: 24) {
-                    metric("wind", String(Int(speed(session.cpm))), speedUnit)
-                    metric("scope", "\(Int(session.accuracy))%", "точность")
-                }
-                Text("\(session.characters) верных символов · \(session.errors) ошибок · \(Int(session.duration)) секунд")
-                Text("\(session.mode.title)\(session.mode == .custom ? "" : " · Урок \(session.level)")\(session.capitals ? " · Заглавные" : "")\(session.numbers ? " · Числа" : "")\(session.punctuation ? " · Пунктуация" : "")")
-                    .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                Button("Готово") { selected = nil }.frame(maxWidth: .infinity, alignment: .trailing)
-            }.padding(24).frame(width: 590)
+                VStack(alignment: .leading, spacing: 18) {
+                    HStack(spacing: 24) {
+                        metric("wind", String(Int(speed(session.cpm))), speedUnit)
+                        metric("scope", "\(Int(session.accuracy))%", "точность")
+                    }
+                    Text("\(session.characters) верных символов · \(session.errors) ошибок · \(Int(session.duration)) секунд")
+                    Text("\(session.mode.title)\(session.mode == .custom ? "" : " · Урок \(session.level)")\(session.capitals ? " · Заглавные" : "")\(session.numbers ? " · Числа" : "")\(session.punctuation ? " · Пунктуация" : "")")
+                        .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }.padding(24)
+                Button("Готово") { selected = nil }.keyboardShortcut(.defaultAction)
+                    .frame(maxWidth: .infinity, alignment: .trailing).padding(20).macKeyGlassChrome()
+            }.frame(width: 590).macKeyGlassSheet()
         }
     }
     private var overview: some View {

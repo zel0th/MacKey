@@ -55,6 +55,6 @@ struct PanelHeading: View {
             VStack(alignment: .leading, spacing: 5) { Text(title).font(.title2.weight(.semibold)); Text(subtitle).font(.callout).foregroundStyle(.secondary) }
             Spacer()
             Button(action: close) { Image(systemName: "xmark.circle.fill").font(.title2).foregroundStyle(.secondary) }.buttonStyle(.plain).help("Закрыть").accessibilityLabel("Закрыть")
-        }.padding(24)
+        }.padding(24).macKeyGlassChrome()
     }
 }

@@ -49,8 +49,8 @@ struct TrainingSettingsView: View {
                     Picker("Тема", selection: binding(\.appearance, restart: false)) { ForEach(Appearance.allCases, id: \.self) { Text($0.title).tag($0) } }
                     Picker("Размер текста", selection: binding(\.fontSize, restart: false)) { ForEach([22,26,30,34,40,44,48], id: \.self) { Text("\($0) пт").tag($0) } }
                 }
-            }.formStyle(.grouped)
-            HStack { Text("Параметры сохраняются автоматически").font(.caption).foregroundStyle(.secondary); Spacer(); Button("К тренировке") { store.panel = nil; store.resume() }.buttonStyle(.borderedProminent) }.padding(20)
+            }.formStyle(.grouped).scrollContentBackground(.hidden)
+            HStack { Text("Параметры сохраняются автоматически").font(.caption).foregroundStyle(.secondary); Spacer(); Button("К тренировке") { store.panel = nil; store.resume() }.buttonStyle(.borderedProminent) }.padding(20).macKeyGlassChrome()
         }.frame(width: 620, height: 720)
     }
 }
