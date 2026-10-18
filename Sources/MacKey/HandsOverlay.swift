@@ -5,9 +5,11 @@ import MacKeyCore
 
 /// Original Bézier contours, drawn in keyboard units. The relaxed home-row pose
 /// stays still so that changing a cue never stretches or distorts the anatomy.
-struct HandsOverlay: View {
+struct HandsOverlay: View, Equatable {
     let active: Finger?
     @Environment(\.colorScheme) private var scheme
+    nonisolated static func == (lhs: Self, rhs: Self) -> Bool { lhs.active == rhs.active }
+    private static let contours = (0..<5).map { contour($0) }
 
     var body: some View {
         Canvas { context, size in
@@ -18,7 +20,7 @@ struct HandsOverlay: View {
                     : [.leftLittle, .leftRing, .leftMiddle, .leftIndex, .thumbs]
                 for (index, finger) in fingers.enumerated() {
                     let transform = CGAffineTransform(a: right ? -unit : unit, b: 0, c: 0, d: unit, tx: right ? 13.4 * unit : 0, ty: 0)
-                    let contour = Self.contour(index).applying(transform)
+                    let contour = Self.contours[index].applying(transform)
                     let selected = active == finger
                     let color = selected ? finger.color(scheme) : Color.primary
                     context.fill(contour, with: .color(color.opacity(selected ? 0.12 : 0.012)))

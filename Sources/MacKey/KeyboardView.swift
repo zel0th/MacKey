@@ -6,44 +6,51 @@ import MacKeyCore
 struct KeyboardView: View {
     let store: TrainingStore
     @Environment(\.colorScheme) private var scheme
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var body: some View {
+        let preferences = store.preferences
+        let layout = store.layout
+        let keys = KeyboardGeometry.keys(shape: preferences.shape)
+        let hintsEnabled = store.hintsEnabled
+        let hint = hintsEnabled ? store.hint : nil
+        let activeFinger = hint.flatMap { hint in keys.first { $0.code == hint.code }?.finger }
+        let shiftHint = activeFinger?.rawValue.hasPrefix("left") == true ? 60 : 56
+        let pressedCodes = store.pressedCodes
+        let shifted = store.shift, caps = store.capsLock, option = store.option, lastError = store.lastError
         VStack(spacing: 8) {
             GeometryReader { proxy in
                 let unit = proxy.size.width / 15
                 ZStack(alignment: .topLeading) {
-                    ForEach(KeyboardGeometry.keys(shape: store.preferences.shape)) { key in
-                        let hint = store.hint
-                        let isTarget = store.hintsEnabled && store.preferences.showKeyHint && (hint?.code == key.code || (hint?.shift == true && key.code == shiftHint) || (hint?.option == true && key.code == 58))
-                        let pressed = store.pressedCodes.contains(key.code) || (store.shift && (key.code == 56 || key.code == 60)) || (store.option && (key.code == 58 || key.code == 61)) || (store.capsLock && key.code == 57)
-                        KeycapView(key: key, glyph: store.layout.glyphs[key.code], shifted: store.shift, caps: store.capsLock, target: isTarget, pressed: pressed, error: pressed && store.lastError, unit: unit)
+                    ForEach(keys) { key in
+                        let isTarget = hintsEnabled && preferences.showKeyHint && (hint?.code == key.code || (hint?.shift == true && key.code == shiftHint) || (hint?.option == true && key.code == 58))
+                        let pressed = pressedCodes.contains(key.code) || (shifted && (key.code == 56 || key.code == 60)) || (option && (key.code == 58 || key.code == 61)) || (caps && key.code == 57)
+                        KeycapView(key: key, glyph: layout.glyphs[key.code], shifted: shifted, caps: caps, target: isTarget, pressed: pressed, error: pressed && lastError, unit: unit)
+                            .equatable()
                             .frame(width: key.width * unit - 6, height: key.height * unit - 6)
                             .position(x: key.x * unit + (key.width * unit - 6) / 2, y: key.y * unit + (key.height * unit - 6) / 2)
                     }
-                    if store.preferences.showFingerHint {
-                        HandsOverlay(active: store.hintsEnabled ? store.activeFinger : nil)
+                    if preferences.showFingerHint {
+                        HandsOverlay(active: activeFinger).equatable()
                     }
                 }
             }.aspectRatio(15 / 6.55, contentMode: .fit)
-            if store.preferences.showFingerHint {
+            if preferences.showFingerHint {
                 HStack(spacing: 16) {
                     HStack(spacing: 7) {
                         ForEach(Finger.allCases.filter { $0 != .thumbs }) { finger in
                             VStack(spacing: 5) {
-                                Capsule().fill(finger.color(scheme).opacity(store.activeFinger == finger && store.hintsEnabled ? 1 : 0.35)).frame(height: 4)
+                                Capsule().fill(finger.color(scheme).opacity(activeFinger == finger ? 1 : 0.35)).frame(height: 4)
                                 Text(finger.title).font(.system(size: 9, weight: .medium)).lineLimit(1).minimumScaleFactor(0.8)
                             }.foregroundStyle(finger.color(scheme)).frame(maxWidth: .infinity)
                         }
                     }
                 }
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(store.hintsEnabled ? "Следующий палец: \(store.activeFinger?.fullTitle ?? "большой")" : "Расположение пальцев")
+                .accessibilityLabel(hintsEnabled ? "Следующий палец: \(activeFinger?.fullTitle ?? "большой")" : "Расположение пальцев")
             }
-        }.animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: store.engine.cursor)
+        }
     }
-    private var shiftHint: Int { store.activeFinger?.rawValue.hasPrefix("left") == true ? 60 : 56 }
 }
-struct KeycapView: View {
+struct KeycapView: View, Equatable {
     let key: PhysicalKey
     let glyph: KeyGlyph?
     let shifted: Bool
@@ -53,6 +60,12 @@ struct KeycapView: View {
     let error: Bool
     let unit: Double
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.key == rhs.key && lhs.glyph == rhs.glyph && lhs.shifted == rhs.shifted
+            && lhs.caps == rhs.caps && lhs.target == rhs.target && lhs.pressed == rhs.pressed
+            && lhs.error == rhs.error && lhs.unit == rhs.unit
+    }
     private var tint: Color { error ? .red : key.finger.color(scheme) }
     private var label: String {
         guard let glyph else { return key.label }
@@ -61,11 +74,10 @@ struct KeycapView: View {
     }
     private var accessibleLabel: String { key.code == 900 ? "Питание" : label.isEmpty ? "Пробел" : label }
     var body: some View {
-        let shape = KeycapShape(iso: key.isoReturn)
         ZStack(alignment: .center) {
-            shape.fill(scheme == .dark ? Color.white.opacity(0.025) : Color.white.opacity(0.55))
-            shape.fill(tint.opacity(target ? 0.24 : pressed ? 0.19 : 0.065))
-            shape.strokeBorder(tint.opacity(target ? 0.95 : pressed ? 0.65 : 0.26), lineWidth: target ? 1.6 : 0.8)
+            KeycapBackground(iso: key.isoReturn, tint: tint, dark: scheme == .dark,
+                             target: target, pressed: pressed, reduceMotion: reduceMotion)
+                .accessibilityHidden(true)
             if key.height < 0.8, let symbol = key.symbol {
                 VStack(spacing: 3) {
                     Image(systemName: symbol).font(.system(size: max(9, unit * 0.16)))

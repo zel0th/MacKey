@@ -22,6 +22,7 @@ enum Panel: String, Identifiable { case settings, statistics, library, help; var
     var promotion: String?
     let layouts: [KeyboardLayout]
     private let storageURL: URL
+    private let persistence: StatePersistence
     private var canSave = true
     private var recorded = false
     private var sessionPreferences = Preferences()
@@ -59,6 +60,7 @@ enum Panel: String, Identifiable { case settings, statistics, library, help; var
         if let override = ProcessInfo.processInfo.environment["MACKEY_DATA_DIR"] { base = URL(fileURLWithPath: override, isDirectory: true) }
         else { base = URL.applicationSupportDirectory.appending(path: "MacKey", directoryHint: .isDirectory) }
         storageURL = base.appending(path: "state.json")
+        persistence = StatePersistence(url: storageURL)
         saved = SavedState()
         do {
             if FileManager.default.fileExists(atPath: storageURL.path) {
@@ -75,26 +77,36 @@ enum Panel: String, Identifiable { case settings, statistics, library, help; var
             saved.preferences.layoutID = KeyboardLayout.preferred(for: preferences.language, among: layouts).id
         }
         if saved.preferences.mode == .custom { saved.preferences.mode = .automatic }
+        persistence.onError = { [weak self] error in self?.errorMessage = "Не удалось сохранить прогресс: \(error)" }
         restart()
     }
     func persist() {
         guard canSave else { return }
-        do {
-            try FileManager.default.createDirectory(at: storageURL.deletingLastPathComponent(), withIntermediateDirectories: true)
-            let encoder = JSONEncoder(); encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-            try encoder.encode(saved).write(to: storageURL, options: .atomic)
-        } catch { errorMessage = "Не удалось сохранить прогресс: \(error.localizedDescription)" }
+        persistence.enqueue(saved)
     }
+    func flushPersistence() async -> String? { await persistence.flush() }
     func update(_ change: (inout Preferences) -> Void, restartLesson: Bool = true) {
         let oldLanguage = preferences.language
         change(&saved.preferences)
         if preferences.language != oldLanguage {
             saved.preferences.layoutID = KeyboardLayout.preferred(for: preferences.language, among: layouts).id
         }
-        persist()
         if restartLesson { restart() }
+        persist()
     }
     func restart() {
+        if preferences.mode == .custom {
+            if let selected = saved.customTexts.first(where: { $0.id == customSelection }) {
+                let validation = TextValidation(text: selected.text, supported: layout.supported)
+                if !validation.canStart {
+                    errorMessage = "Текст «\(selected.title)» сохранён в библиотеке, но его нельзя набрать в раскладке «\(layout.name)» на клавиатуре \(preferences.shape.rawValue). Начат обычный урок."
+                    saved.preferences.mode = .automatic; customSelection = nil
+                    persist()
+                }
+            } else {
+                saved.preferences.mode = .automatic; customSelection = nil
+            }
+        }
         sessionPreferences = preferences; sessionLevel = level
         let text: String
         if preferences.mode == .custom, let selected = saved.customTexts.first(where: { $0.id == customSelection }) {
@@ -135,14 +147,24 @@ enum Panel: String, Identifiable { case settings, statistics, library, help; var
         persist()
     }
     func addText(title: String, text: String) {
-        let clean = TypingEngine.normalize(text)
-        guard !clean.isEmpty else { return }
-        let item = CustomText(title: title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Мой текст" : title, text: clean)
+        let validation = TextValidation(text: text, supported: layout.supported)
+        guard validateCustomText(validation) else { return }
+        let item = CustomText(title: title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Мой текст" : title, text: validation.normalized)
         saved.customTexts.append(item); selectText(item)
     }
     func selectText(_ item: CustomText) {
+        guard validateCustomText(TextValidation(text: item.text, supported: layout.supported)) else { return }
         customSelection = item.id; saved.preferences.mode = .custom
         panel = nil; persist(); restart()
+    }
+    private func validateCustomText(_ validation: TextValidation) -> Bool {
+        guard validation.canStart else {
+            errorMessage = validation.isTooLong ? "Разделите текст на фрагменты до 50 000 символов."
+                : validation.normalized.isEmpty ? "Добавьте текст для тренировки."
+                : "Этот текст нельзя набрать в раскладке «\(layout.name)». Выберите подходящую раскладку в настройках."
+            return false
+        }
+        return true
     }
     func exportHistory() {
         let panel = NSSavePanel(); panel.allowedContentTypes = [.commaSeparatedText]; panel.nameFieldStringValue = "MacKey-statistics.csv"

@@ -31,7 +31,13 @@ public struct KeyboardLayout: Identifiable, Codable, Equatable, Sendable {
         self.id = id; self.name = name; self.language = language; self.glyphs = glyphs
     }
     public var supported: Set<Character> {
-        Set(glyphs.values.flatMap { Array($0.base + $0.shifted + $0.option + $0.optionShift) } + [" "])
+        // Joining layers can merge combining marks into a different grapheme.
+        // Only advertise values that character(code:...) can actually emit.
+        Set(glyphs.values.flatMap { glyph in
+            [glyph.base, glyph.shifted, glyph.option, glyph.optionShift].compactMap { value in
+                value.count == 1 ? value.first : nil
+            }
+        } + [" "])
     }
     public func character(code: Int, shift: Bool, caps: Bool, option: Bool = false) -> Character? {
         if code == 49 { return " " }
@@ -92,7 +98,7 @@ public struct KeyboardLayout: Identifiable, Codable, Equatable, Sendable {
         return KeyboardLayout(id: id, name: name, language: language, glyphs: glyphs)
     }
 }
-public struct PhysicalKey: Identifiable, Sendable {
+public struct PhysicalKey: Identifiable, Equatable, Sendable {
     public var id: Int { code }
     public let code: Int
     public let label: String
@@ -108,7 +114,12 @@ public struct PhysicalKey: Identifiable, Sendable {
     }
 }
 public enum KeyboardGeometry {
+    private static let isoKeys = makeKeys(shape: .iso)
+    private static let ansiKeys = makeKeys(shape: .ansi)
     public static func keys(shape: KeyboardShape) -> [PhysicalKey] {
+        shape == .iso ? isoKeys : ansiKeys
+    }
+    private static func makeKeys(shape: KeyboardShape) -> [PhysicalKey] {
         let fingers: [Finger] = [.leftLittle,.leftRing,.leftMiddle,.leftIndex,.leftIndex,.rightIndex,.rightIndex,.rightMiddle,.rightRing,.rightLittle,.rightLittle,.rightLittle,.rightLittle]
         var keys: [PhysicalKey] = [PhysicalKey(53, "esc", 0, 0, 1, 0.64, .leftLittle)]
         let codes = [122,120,99,118,96,97,98,100,101,109,103,111]

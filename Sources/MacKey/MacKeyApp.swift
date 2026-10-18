@@ -6,10 +6,12 @@ import MacKeyCore
 
 @main
 struct MacKeyApp: App {
+    @NSApplicationDelegateAdaptor(MacKeyAppDelegate.self) private var appDelegate
     @ViewState<TrainingStore> private var store = TrainingStore()
     var body: some Scene {
         Window("MacKey", id: "main") {
             MainView(store: store)
+                .onAppear { appDelegate.store = store }
                 .preferredColorScheme(store.preferences.appearance == .system ? nil : store.preferences.appearance == .dark ? .dark : .light)
         }
         .defaultSize(width: 1220, height: 880)
@@ -18,7 +20,7 @@ struct MacKeyApp: App {
         .commands {
             CommandGroup(replacing: .appInfo) {
                 Button("О программе MacKey") {
-                    NSApplication.shared.orderFrontStandardAboutPanel(options: [.applicationName: "MacKey", .applicationVersion: "1.0", .credits: NSAttributedString(string: "Клавиатурный тренажёр для Mac\nSwiftUI · Векторная клавиатура · Локальная статистика")])
+                    NSApplication.shared.orderFrontStandardAboutPanel(options: [.applicationName: "MacKey", .applicationVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.1", .credits: NSAttributedString(string: "Клавиатурный тренажёр для Mac\nSwiftUI · Векторная клавиатура · Локальная статистика")])
                 }
             }
             CommandGroup(replacing: .newItem) {}
@@ -33,6 +35,24 @@ struct MacKeyApp: App {
             }
             CommandGroup(replacing: .help) { Button("Как заниматься в MacKey") { store.panel = .help } }
         }
+    }
+}
+@MainActor final class MacKeyAppDelegate: NSObject, NSApplicationDelegate {
+    weak var store: TrainingStore?
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard let store else { return .terminateNow }
+        Task { @MainActor in
+            let error = await store.flushPersistence()
+            if let error {
+                let alert = NSAlert()
+                alert.messageText = "Не удалось сохранить прогресс"
+                alert.informativeText = "\(error)\nМожно остаться в приложении и повторить сохранение."
+                alert.addButton(withTitle: "Остаться")
+                alert.addButton(withTitle: "Выйти без сохранения")
+                sender.reply(toApplicationShouldTerminate: alert.runModal() == .alertSecondButtonReturn)
+            } else { sender.reply(toApplicationShouldTerminate: true) }
+        }
+        return .terminateLater
     }
 }
 struct MainView: View {

@@ -10,11 +10,9 @@ struct TextLibraryView: View {
     @ViewState<String> private var text = ""
     @ViewState<Bool> private var importing = false
     @ViewState<String?> private var message = nil
-    private var unsupported: [String] {
-        Array(Set(TypingEngine.normalize(text).filter { !store.layout.supported.contains($0) })).sorted().map(String.init)
-    }
-    private var canStart: Bool { !TypingEngine.normalize(text).isEmpty && unsupported.isEmpty && text.count <= 50_000 }
     var body: some View {
+        let layout = store.layout
+        let validation = TextValidation(text: text, supported: layout.supported)
         VStack(spacing: 0) {
             PanelHeading(title: "Мои тексты", subtitle: "Тренируйтесь на том, что интересно читать") { store.panel = nil }
             HStack(alignment: .top, spacing: 22) {
@@ -34,16 +32,16 @@ struct TextLibraryView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     TextField("Название упражнения", text: $title).textFieldStyle(.roundedBorder)
                     TextEditor(text: $text).font(.system(size: 15, design: .monospaced)).scrollContentBackground(.hidden).padding(10).background(.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
-                    Text("\(text.count) / 50 000 символов · абзацы и табуляция станут пробелами").font(.caption).foregroundStyle(.secondary)
-                    if !unsupported.isEmpty { Text("Нет в раскладке «\(store.layout.name)»: \(unsupported.prefix(20).joined(separator: " ")). Выберите подходящую раскладку в настройках.").font(.caption).foregroundStyle(.orange) }
+                    Text("\(validation.characterCount) / 50 000 символов · абзацы и табуляция станут пробелами").font(.caption).foregroundStyle(.secondary)
+                    if !validation.unsupported.isEmpty { Text("Нет в раскладке «\(layout.name)»: \(validation.unsupported.prefix(20).map(String.init).joined(separator: " ")). Выберите подходящую раскладку в настройках.").font(.caption).foregroundStyle(.orange) }
                     HStack {
                         Button("Открыть TXT…") { importing = true }
                         Button("Вставить") { if let value = NSPasteboard.general.string(forType: .string) { text = value } }
                         Spacer()
                         Button("Начать") {
-                            if let existing = store.saved.customTexts.first(where: { $0.title == title && $0.text == TypingEngine.normalize(text) }) { store.selectText(existing) }
+                            if let existing = store.saved.customTexts.first(where: { $0.title == title && $0.text == validation.normalized }) { store.selectText(existing) }
                             else { store.addText(title: title, text: text) }
-                        }.buttonStyle(.borderedProminent).disabled(!canStart)
+                        }.buttonStyle(.borderedProminent).disabled(!validation.canStart)
                     }
                 }
             }.padding(24)
