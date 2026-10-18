@@ -20,7 +20,7 @@ struct MacKeyApp: App {
         .commands {
             CommandGroup(replacing: .appInfo) {
                 Button("О программе MacKey") {
-                    NSApplication.shared.orderFrontStandardAboutPanel(options: [.applicationName: "MacKey", .applicationVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.1", .credits: NSAttributedString(string: "Клавиатурный тренажёр для Mac\nSwiftUI · Векторная клавиатура · Локальная статистика")])
+                    NSApplication.shared.orderFrontStandardAboutPanel(options: [.applicationName: "MacKey", .applicationVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.2", .credits: NSAttributedString(string: "Клавиатурный тренажёр для Mac\nSwiftUI · Векторная клавиатура · Локальная статистика")])
                 }
             }
             CommandGroup(replacing: .newItem) {}

@@ -18,7 +18,7 @@ enum MacKeyTheme {
 }
 extension Finger {
     func color(_ scheme: ColorScheme) -> Color {
-        let rgb: (Double, Double, Double) = switch self {
+        let pastel: (Double, Double, Double) = switch self {
         case .leftLittle: (0.91,0.60,0.65)
         case .leftRing: (0.88,0.76,0.51)
         case .leftMiddle: (0.66,0.80,0.56)
@@ -29,8 +29,21 @@ extension Finger {
         case .rightRing: (0.90,0.71,0.51)
         case .rightLittle: (0.91,0.59,0.73)
         }
-        let factor = scheme == .dark ? 1.0 : 0.58
-        return Color(red: rgb.0 * factor, green: rgb.1 * factor, blue: rgb.2 * factor)
+        // Light backgrounds need saturated ink hues, not a uniform darkening of
+        // the pastel palette. Translucent key fills keep the overall appearance soft.
+        let ink: (Double, Double, Double) = switch self {
+        case .leftLittle: (0.65,0.20,0.30)
+        case .leftRing: (0.49,0.33,0.04)
+        case .leftMiddle: (0.28,0.41,0.13)
+        case .leftIndex: (0.08,0.39,0.51)
+        case .thumbs: (0.34,0.39,0.47)
+        case .rightIndex: (0.45,0.26,0.65)
+        case .rightMiddle: (0.04,0.42,0.30)
+        case .rightRing: (0.60,0.28,0.07)
+        case .rightLittle: (0.62,0.20,0.43)
+        }
+        let rgb = scheme == .dark ? pastel : ink
+        return Color(red: rgb.0, green: rgb.1, blue: rgb.2)
     }
 }
 struct PanelHeading: View {

@@ -23,8 +23,9 @@ struct HandsOverlay: View, Equatable {
                     let contour = Self.contours[index].applying(transform)
                     let selected = active == finger
                     let color = selected ? finger.color(scheme) : Color.primary
-                    context.fill(contour, with: .color(color.opacity(selected ? 0.12 : 0.012)))
-                    context.stroke(contour, with: .color(color.opacity(selected ? 0.72 : 0.19)), style: StrokeStyle(lineWidth: max(1.2, unit * 0.027), lineCap: .round, lineJoin: .round))
+                    let light = scheme == .light
+                    context.fill(contour, with: .color(color.opacity(selected ? (light ? 0.18 : 0.12) : 0.012)))
+                    context.stroke(contour, with: .color(color.opacity(selected ? (light ? 1.0 : 0.72) : 0.19)), style: StrokeStyle(lineWidth: max(1.2, unit * 0.027) * (selected && light ? 1.45 : 1), lineCap: .round, lineJoin: .round))
                 }
             }
         }

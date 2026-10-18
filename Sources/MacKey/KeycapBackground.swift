@@ -42,9 +42,13 @@ struct KeycapBackground: NSViewRepresentable {
             CATransaction.begin()
             CATransaction.setDisableActions(true)
             base.fillColor = NSColor.white.withAlphaComponent(dark ? 0.025 : 0.55).cgColor
-            let fillColor = tint.withAlphaComponent(target ? 0.24 : pressed ? 0.19 : 0.065).cgColor
-            let strokeColor = tint.withAlphaComponent(target ? 0.95 : pressed ? 0.65 : 0.26).cgColor
-            let width: CGFloat = target ? 1.6 : 0.8
+            let fillAlpha = dark ? (target ? 0.24 : pressed ? 0.19 : 0.065)
+                                 : (target ? 0.26 : pressed ? 0.20 : 0.13)
+            let strokeAlpha = dark ? (target ? 0.95 : pressed ? 0.65 : 0.26)
+                                   : (target ? 1.0 : pressed ? 0.80 : 0.44)
+            let fillColor = tint.withAlphaComponent(fillAlpha).cgColor
+            let strokeColor = tint.withAlphaComponent(strokeAlpha).cgColor
+            let width: CGFloat = target ? (dark ? 1.6 : 2.0) : 0.8
             // Explicit, interruptible animations start from the currently visible
             // values. Rapid typing replaces the previous fade instead of queuing it.
             if animated {

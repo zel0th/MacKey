@@ -38,7 +38,7 @@ struct KeyboardView: View {
                     HStack(spacing: 7) {
                         ForEach(Finger.allCases.filter { $0 != .thumbs }) { finger in
                             VStack(spacing: 5) {
-                                Capsule().fill(finger.color(scheme).opacity(activeFinger == finger ? 1 : 0.35)).frame(height: 4)
+                                Capsule().fill(finger.color(scheme).opacity(activeFinger == finger ? 1 : scheme == .dark ? 0.35 : 0.65)).frame(height: 4)
                                 Text(finger.title).font(.system(size: 9, weight: .medium)).lineLimit(1).minimumScaleFactor(0.8)
                             }.foregroundStyle(finger.color(scheme)).frame(maxWidth: .infinity)
                         }
@@ -82,11 +82,11 @@ struct KeycapView: View, Equatable {
                 VStack(spacing: 3) {
                     Image(systemName: symbol).font(.system(size: max(9, unit * 0.16)))
                     Text(key.label).font(.system(size: max(7, unit * 0.11), weight: .medium))
-                }.foregroundStyle(tint.opacity(0.85))
+                }.foregroundStyle(tint.opacity(scheme == .dark ? 0.85 : 1))
             } else if glyph != nil {
                 Text(label).font(.system(size: unit * 0.31, weight: target ? .semibold : .medium, design: .rounded)).foregroundStyle(tint)
                 if let glyph, glyph.shifted != glyph.base.uppercased() {
-                    VStack { HStack { Text(glyph.shifted).font(.system(size: unit * 0.13)); Spacer() }; Spacer() }.padding(8).foregroundStyle(tint.opacity(0.62))
+                    VStack { HStack { Text(glyph.shifted).font(.system(size: unit * 0.13)); Spacer() }; Spacer() }.padding(8).foregroundStyle(tint.opacity(scheme == .dark ? 0.62 : 0.85))
                 }
                 if key.code == 3 || key.code == 38 {
                     VStack { Spacer(); Capsule().fill(tint.opacity(0.6)).frame(width: 12, height: 2) }.padding(.bottom, 8)
@@ -98,7 +98,7 @@ struct KeycapView: View, Equatable {
                     Text(label).font(.system(size: max(8, unit * 0.145), weight: .medium))
                         .frame(maxWidth: .infinity, alignment: key.isoReturn ? .trailing : .leading)
                         .padding(9)
-                }.foregroundStyle(tint.opacity(0.85))
+                }.foregroundStyle(tint.opacity(scheme == .dark ? 0.85 : 1))
             }
             if target && !pressed {
                 VStack { Spacer(); HStack { Spacer(); Circle().fill(tint).frame(width: 4, height: 4) }.padding(7) }

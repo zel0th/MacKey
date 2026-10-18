@@ -40,7 +40,7 @@ for config in ['Debug','Release']:
     common = 'CLANG_ENABLE_MODULES = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_VERSION = 6.0; ENABLE_TESTABILITY = YES;'
     common += ' SWIFT_OPTIMIZATION_LEVEL = "-Onone"; DEBUG_INFORMATION_FORMAT = dwarf; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;' if config == 'Debug' else ' SWIFT_OPTIMIZATION_LEVEL = "-O"; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";'
     projectconfigs.append(obj('projectconfig:'+config, f'isa = XCBuildConfiguration; name = {config}; buildSettings = {{ {common} }};'))
-    settings = 'PRODUCT_NAME = MacKey; PRODUCT_BUNDLE_IDENTIFIER = dev.mackey.MacKey; INFOPLIST_FILE = Info.plist; GENERATE_INFOPLIST_FILE = NO; CODE_SIGN_STYLE = Automatic; CODE_SIGN_IDENTITY = "-"; CODE_SIGN_ENTITLEMENTS = MacKey.entitlements; ENABLE_APP_SANDBOX = YES; ENABLE_HARDENED_RUNTIME = YES; COMBINE_HIDPI_IMAGES = YES; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks"; CURRENT_PROJECT_VERSION = 2; MARKETING_VERSION = 1.0.1;'
+    settings = 'PRODUCT_NAME = MacKey; PRODUCT_BUNDLE_IDENTIFIER = dev.mackey.MacKey; INFOPLIST_FILE = Info.plist; GENERATE_INFOPLIST_FILE = NO; CODE_SIGN_STYLE = Automatic; CODE_SIGN_IDENTITY = "-"; CODE_SIGN_ENTITLEMENTS = MacKey.entitlements; ENABLE_APP_SANDBOX = YES; ENABLE_HARDENED_RUNTIME = YES; COMBINE_HIDPI_IMAGES = YES; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks"; CURRENT_PROJECT_VERSION = 3; MARKETING_VERSION = 1.0.2;'
     appconfigs.append(obj('appconfig:'+config, f'isa = XCBuildConfiguration; name = {config}; buildSettings = {{ {settings} }};'))
 projectlist = obj('projectlist', f'isa = XCConfigurationList; buildConfigurations = ({",".join(projectconfigs)},); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;')
 applist = obj('applist', f'isa = XCConfigurationList; buildConfigurations = ({",".join(appconfigs)},); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;')
@@ -72,7 +72,7 @@ scheme = f'''<?xml version="1.0" encoding="UTF-8"?>
 schemedir = project / 'xcshareddata/xcschemes'
 schemedir.mkdir(parents=True, exist_ok=True)
 (schemedir / 'MacKey.xcscheme').write_text(scheme)
-info = {'CFBundleName':'MacKey','CFBundleDisplayName':'MacKey','CFBundleIdentifier':'dev.mackey.MacKey','CFBundleExecutable':'MacKey','CFBundlePackageType':'APPL','CFBundleShortVersionString':'1.0.1','CFBundleVersion':'2','LSMinimumSystemVersion':'14.0','NSHighResolutionCapable':True,'NSPrincipalClass':'NSApplication','CFBundleIconFile':'AppIcon','LSApplicationCategoryType':'public.app-category.education','NSHumanReadableCopyright':'MacKey · 2026'}
+info = {'CFBundleName':'MacKey','CFBundleDisplayName':'MacKey','CFBundleIdentifier':'dev.mackey.MacKey','CFBundleExecutable':'MacKey','CFBundlePackageType':'APPL','CFBundleShortVersionString':'1.0.2','CFBundleVersion':'3','LSMinimumSystemVersion':'14.0','NSHighResolutionCapable':True,'NSPrincipalClass':'NSApplication','CFBundleIconFile':'AppIcon','LSApplicationCategoryType':'public.app-category.education','NSHumanReadableCopyright':'MacKey · 2026'}
 (root / 'Info.plist').write_bytes(plistlib.dumps(info))
 (root / 'MacKey.entitlements').write_bytes(plistlib.dumps({'com.apple.security.app-sandbox': True, 'com.apple.security.files.user-selected.read-write': True}))
 print(f'Generated project with {len(files)} Swift files')
